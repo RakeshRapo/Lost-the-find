@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Find the Lost Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <i class="fas fa-search-location"></i>
+                <span>Campus Find the Lost</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#lost" class="nav-link">Report Lost</a></li>
+                <li><a href="#found" class="nav-link">Post Found</a></li>
+                <li><a href="#browse" class="nav-link">Browse Items</a></li>
+            </ul>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h1>🔍 Find What You've Lost</h1>
+                <p>✨ Connect lost items with their owners on campus. Report lost items or post found belongings to help reunite them. Let's make campus life easier, one found item at a time! 🎯</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" onclick="scrollToSection('lost')">
+                        <i class="fas fa-exclamation-triangle"></i> Report Lost Item
+                    </button>
+                    <button class="btn btn-secondary" onclick="scrollToSection('found')">
+                        <i class="fas fa-hand-holding-heart"></i> Post Found Item
+                    </button>
+                </div>
+            </div>
+            <div class="hero-image">
+                <i class="fas fa-search-location"></i>
+            </div>
+        </section>
+
+        <!-- Report Lost Item Section -->
+        <section id="lost" class="section">
+            <div class="container">
+                <h2><i class="fas fa-exclamation-triangle"></i> Report Lost Item</h2>
+                <p>🚨 Help others find your lost belongings by providing detailed information. Every detail counts! 🔍</p>
+                
+                <form id="lostForm" class="form">
+                    <div class="form-group">
+                        <label for="lostItemName">Item Name *</label>
+                        <input type="text" id="lostItemName" name="itemName" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="lostCategory">Category *</label>
+                            <select id="lostCategory" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="electronics">Electronics</option>
+                                <option value="books">Books & Stationery</option>
+                                <option value="clothing">Clothing & Accessories</option>
+                                <option value="jewelry">Jewelry & Watches</option>
+                                <option value="bags">Bags & Wallets</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lostLocation">Last Seen Location *</label>
+                            <input type="text" id="lostLocation" name="location" placeholder="e.g., Library, Cafeteria, Room 101" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="lostDate">Date Lost *</label>
+                            <input type="date" id="lostDate" name="dateLost" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lostTime">Approximate Time</label>
+                            <input type="time" id="lostTime" name="timeLost">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lostDescription">Description *</label>
+                        <textarea id="lostDescription" name="description" rows="4" placeholder="Describe your item in detail (color, brand, size, unique features, etc.)" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lostContact">Contact Information *</label>
+                        <input type="text" id="lostContact" name="contact" placeholder="Phone number or email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lostReward">Reward (Optional)</label>
+                        <input type="text" id="lostReward" name="reward" placeholder="e.g., $20, Coffee, etc.">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Report Lost Item
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Post Found Item Section -->
+        <section id="found" class="section">
+            <div class="container">
+                <h2><i class="fas fa-hand-holding-heart"></i> Post Found Item</h2>
+                <p>💝 Help reunite found items with their owners by posting them here. Be a hero today! 🦸‍♂️</p>
+                
+                <form id="foundForm" class="form">
+                    <div class="form-group">
+                        <label for="foundItemName">Item Name *</label>
+                        <input type="text" id="foundItemName" name="itemName" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="foundCategory">Category *</label>
+                            <select id="foundCategory" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="electronics">Electronics</option>
+                                <option value="books">Books & Stationery</option>
+                                <option value="clothing">Clothing & Accessories</option>
+                                <option value="jewelry">Jewelry & Watches</option>
+                                <option value="bags">Bags & Wallets</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="foundLocation">Found Location *</label>
+                            <input type="text" id="foundLocation" name="location" placeholder="e.g., Library, Cafeteria, Room 101" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="foundDate">Date Found *</label>
+                            <input type="date" id="foundDate" name="dateFound" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="foundTime">Time Found</label>
+                            <input type="time" id="foundTime" name="timeFound">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="foundDescription">Description *</label>
+                        <textarea id="foundDescription" name="description" rows="4" placeholder="Describe the found item in detail (color, brand, size, condition, etc.)" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="foundImage">Upload Image (Optional)</label>
+                        <input type="file" id="foundImage" name="image" accept="image/*">
+                        <small>Upload a clear image to help identify the item</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="foundContact">Your Contact Information *</label>
+                        <input type="text" id="foundContact" name="contact" placeholder="Phone number or email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="foundCurrentLocation">Current Item Location *</label>
+                        <input type="text" id="foundCurrentLocation" name="currentLocation" placeholder="Where is the item currently kept?" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="fas fa-upload"></i> Post Found Item
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Browse Items Section -->
+        <section id="browse" class="section">
+            <div class="container">
+                <h2><i class="fas fa-search"></i> Browse Items</h2>
+                <p>🔎 Search through lost and found items to help reunite them. Your next match could be just a click away! 🎯</p>
+                
+                <div class="search-filters">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Search items...">
+                        <button type="button" onclick="searchItems()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="filters">
+                        <select id="categoryFilter">
+                            <option value="">All Categories</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="books">Books & Stationery</option>
+                            <option value="clothing">Clothing & Accessories</option>
+                            <option value="jewelry">Jewelry & Watches</option>
+                            <option value="bags">Bags & Wallets</option>
+                            <option value="other">Other</option>
+                        </select>
+                        
+                        <select id="typeFilter">
+                            <option value="">All Types</option>
+                            <option value="lost">Lost Items</option>
+                            <option value="found">Found Items</option>
+                        </select>
+                        
+                        <button onclick="clearFilters()" class="btn btn-outline">Clear Filters</button>
+                        <button onclick="cleanupOldItems()" class="btn btn-secondary" style="background: #e74c3c;">
+                            <i class="fas fa-broom"></i> Cleanup Old Items
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="itemsContainer" class="items-grid">
+                    <!-- Items will be dynamically loaded here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Campus Find the Lost</h3>
+                    <p>Helping reunite lost items with their owners on campus.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#lost">Report Lost</a></li>
+                        <li><a href="#found">Post Found</a></li>
+                        <li><a href="#browse">Browse Items</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>Email: support@campusfind.com</p>
+                    <p>Phone: (555) 123-4567</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Campus Find the Lost Portal. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modal-body">
+                <i class="fas fa-check-circle success-icon"></i>
+                <h3>Success!</h3>
+                <p id="modalMessage"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+
