@@ -3,9 +3,6 @@ let lostItems = [];
 let foundItems = [];
 let allItems = [];
 
-// API base URL
-const API_BASE_URL = 'http://localhost:3000/api';
-
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
@@ -19,8 +16,8 @@ async function initializeApp() {
     document.getElementById('lostDate').value = today;
     document.getElementById('foundDate').value = today;
     
-    // Load items from API
-    await loadItemsFromAPI();
+    // Load items from localStorage
+    loadItemsFromStorage();
     
     // Display items
     displayItems();
@@ -55,11 +52,13 @@ function setupEventListeners() {
 }
 
 // Handle lost item form submission
-async function handleLostForm(event) {
+function handleLostForm(event) {
     event.preventDefault();
     
     const formData = new FormData(event.target);
     const lostItem = {
+        id: generateId(),
+        type: 'lost',
         itemName: formData.get('itemName'),
         category: formData.get('category'),
         location: formData.get('location'),
@@ -67,40 +66,36 @@ async function handleLostForm(event) {
         timeLost: formData.get('timeLost'),
         description: formData.get('description'),
         contact: formData.get('contact'),
-        reward: formData.get('reward')
+        reward: formData.get('reward'),
+        datePosted: new Date().toISOString(),
+        status: 'active'
     };
     
-    try {
-        const response = await fetch(`${API_BASE_URL}/items/lost`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(lostItem)
-        });
-        
-        if (response.ok) {
-            const newItem = await response.json();
-            lostItems.push(newItem);
-            displayItems();
-            showSuccessModal('Lost item reported successfully! We\'ll help you find it.');
-            event.target.reset();
-            document.getElementById('lostDate').value = new Date().toISOString().split('T')[0];
-        } else {
-            throw new Error('Failed to add lost item');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        showSuccessModal('Error: Failed to report lost item. Please try again.');
-    }
+    // Add to lost items
+    lostItems.push(lostItem);
+    
+    // Save to localStorage
+    saveItemsToStorage();
+    
+    // Display items
+    displayItems();
+    
+    // Show success message
+    showSuccessModal('Lost item reported successfully! We\'ll help you find it.');
+    
+    // Reset form
+    event.target.reset();
+    document.getElementById('lostDate').value = new Date().toISOString().split('T')[0];
 }
 
 // Handle found item form submission
-async function handleFoundForm(event) {
+function handleFoundForm(event) {
     event.preventDefault();
     
     const formData = new FormData(event.target);
     const foundItem = {
+        id: generateId(),
+        type: 'found',
         itemName: formData.get('itemName'),
         category: formData.get('category'),
         location: formData.get('location'),
@@ -109,32 +104,26 @@ async function handleFoundForm(event) {
         description: formData.get('description'),
         image: formData.get('image') ? 'sample-image.jpg' : null,
         contact: formData.get('contact'),
-        currentLocation: formData.get('currentLocation')
+        currentLocation: formData.get('currentLocation'),
+        datePosted: new Date().toISOString(),
+        status: 'active'
     };
     
-    try {
-        const response = await fetch(`${API_BASE_URL}/items/found`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(foundItem)
-        });
-        
-        if (response.ok) {
-            const newItem = await response.json();
-            foundItems.push(newItem);
-            displayItems();
-            showSuccessModal('Found item posted successfully! Thank you for helping reunite it with its owner.');
-            event.target.reset();
-            document.getElementById('foundDate').value = new Date().toISOString().split('T')[0];
-        } else {
-            throw new Error('Failed to add found item');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        showSuccessModal('Error: Failed to post found item. Please try again.');
-    }
+    // Add to found items
+    foundItems.push(foundItem);
+    
+    // Save to localStorage
+    saveItemsToStorage();
+    
+    // Display items
+    displayItems();
+    
+    // Show success message
+    showSuccessModal('Found item posted successfully! Thank you for helping reunite it with its owner.');
+    
+    // Reset form
+    event.target.reset();
+    document.getElementById('foundDate').value = new Date().toISOString().split('T')[0];
 }
 
 // Generate unique ID
@@ -220,7 +209,7 @@ function createItemCard(item) {
                 ${isLost && item.status === 'found' ? `
                     <div class="item-detail success-detail">
                         <strong>✅ Status:</strong><br>
-                        <span style="color: #27ae60; font-weight: bold;">FOUND!</span>
+                        <span style="color: #00d4aa; font-weight: bold;">FOUND!</span>
                     </div>
                 ` : ''}
             </div>
@@ -231,12 +220,12 @@ function createItemCard(item) {
                     ${isLost ? 'Contact Owner' : 'Contact Finder'}
                 </button>
                 ${isLost && item.status !== 'found' ? `
-                    <button class="btn-contact" onclick="markAsFound('${item.id}')" style="background: #27ae60;">
+                    <button class="btn-contact" onclick="markAsFound('${item.id}')" style="background: #00d4aa;">
                         <i class="fas fa-check"></i> Mark Found
                     </button>
                 ` : ''}
                 ${isFoundFromLost ? `
-                    <button class="btn-contact" onclick="contactOwner('${item.id}')" style="background: #27ae60;">
+                    <button class="btn-contact" onclick="contactOwner('${item.id}')" style="background: #00d4aa;">
                         <i class="fas fa-handshake"></i> Reunite with Owner
                     </button>
                 ` : ''}
@@ -319,7 +308,51 @@ function contactOwner(itemId) {
 
 // Mark lost item as found
 function markAsFound(itemId) {
-    markAsFoundAPI(itemId);
+    const lostItem = lostItems.find(item => item.id === itemId);
+    if (lostItem) {
+        // Get finder contact and current location
+        const finderContact = prompt('Please enter your contact information (phone/email):');
+        if (!finderContact) return;
+        
+        const currentLocation = prompt('Where is the item currently kept? (e.g., Security Office, Library Desk):');
+        if (!currentLocation) return;
+        
+        // Create a new found item
+        const foundItem = {
+            id: generateId(),
+            type: 'found',
+            itemName: lostItem.itemName,
+            category: lostItem.category,
+            location: lostItem.location,
+            dateFound: new Date().toISOString(),
+            timeFound: new Date().toLocaleTimeString(),
+            description: lostItem.description,
+            image: null,
+            contact: finderContact,
+            currentLocation: currentLocation,
+            datePosted: new Date().toISOString(),
+            status: 'active',
+            originalLostItemId: lostItem.id,
+            originalOwnerContact: lostItem.contact,
+            reward: lostItem.reward
+        };
+        
+        // Mark original lost item as found
+        lostItem.status = 'found';
+        lostItem.dateFound = foundItem.dateFound;
+        lostItem.foundItemId = foundItem.id;
+        
+        // Add to found items
+        foundItems.push(foundItem);
+        
+        // Save to localStorage
+        saveItemsToStorage();
+        
+        // Display items
+        displayItems();
+        
+        showSuccessModal(`🎉 Item successfully marked as found!\n\n✅ ${foundItem.itemName} has been moved to Found Items\n📞 Contact: ${foundItem.contact}\n📍 Current Location: ${foundItem.currentLocation}\n\nThe original owner will be notified!`);
+    }
 }
 
 // Navigation handling
@@ -373,68 +406,109 @@ function closeModal() {
     document.getElementById('successModal').style.display = 'none';
 }
 
-// Load items from API
-async function loadItemsFromAPI() {
+// Load items from localStorage
+function loadItemsFromStorage() {
     try {
-        const response = await fetch(`${API_BASE_URL}/items`);
-        if (response.ok) {
-            const data = await response.json();
-            lostItems = data.lostItems || [];
-            foundItems = data.foundItems || [];
-        } else {
-            console.error('Failed to load items from API');
+        const storedLostItems = localStorage.getItem('lostItems');
+        const storedFoundItems = localStorage.getItem('foundItems');
+        
+        if (storedLostItems) {
+            lostItems = JSON.parse(storedLostItems);
+        }
+        
+        if (storedFoundItems) {
+            foundItems = JSON.parse(storedFoundItems);
+        }
+        
+        // If no items exist, add sample data
+        if (lostItems.length === 0 && foundItems.length === 0) {
+            addSampleData();
         }
     } catch (error) {
-        console.error('Error loading items:', error);
+        console.error('Error loading items from storage:', error);
+        addSampleData();
     }
 }
 
-// Mark lost item as found via API
-async function markAsFoundAPI(itemId) {
+// Save items to localStorage
+function saveItemsToStorage() {
     try {
-        // Get finder contact and current location
-        const finderContact = prompt('Please enter your contact information (phone/email):');
-        if (!finderContact) return;
-        
-        const currentLocation = prompt('Where is the item currently kept? (e.g., Security Office, Library Desk):');
-        if (!currentLocation) return;
-        
-        const response = await fetch(`${API_BASE_URL}/items/lost/${itemId}/found`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                finderContact: finderContact,
-                currentLocation: currentLocation
-            })
-        });
-        
-        if (response.ok) {
-            const result = await response.json();
-            
-            // Update local data
-            const lostItem = lostItems.find(item => item.id === itemId);
-            if (lostItem) {
-                lostItem.status = 'found';
-                lostItem.dateFound = result.updatedLostItem.dateFound;
-                lostItem.foundItemId = result.updatedLostItem.foundItemId;
-            }
-            
-            // Add the new found item to local data
-            if (result.foundItem) {
-                foundItems.push(result.foundItem);
-            }
-            
-            displayItems();
-            showSuccessModal(`🎉 Item successfully marked as found!\n\n✅ ${result.foundItem.itemName} has been moved to Found Items\n📞 Contact: ${result.foundItem.contact}\n📍 Current Location: ${result.foundItem.currentLocation}\n\nThe original owner will be notified!`);
-        } else {
-            throw new Error('Failed to mark item as found');
-        }
+        localStorage.setItem('lostItems', JSON.stringify(lostItems));
+        localStorage.setItem('foundItems', JSON.stringify(foundItems));
     } catch (error) {
-        console.error('Error:', error);
-        showSuccessModal('Error: Failed to mark item as found. Please try again.');
+        console.error('Error saving items to storage:', error);
     }
+}
+
+// Add sample data
+function addSampleData() {
+    const sampleLostItems = [
+        {
+            id: 'sample-lost-1',
+            type: 'lost',
+            itemName: 'iPhone 13 Pro',
+            category: 'electronics',
+            location: 'Library - Study Room 3',
+            dateLost: '2024-01-15',
+            timeLost: '14:30',
+            description: 'Black iPhone 13 Pro with clear case. Has a small scratch on the back. Last seen charging on the desk.',
+            contact: 'john.doe@campus.edu',
+            reward: '$50',
+            datePosted: '2024-01-15T14:30:00.000Z',
+            status: 'active'
+        },
+        {
+            id: 'sample-lost-2',
+            type: 'lost',
+            itemName: 'Calculus Textbook',
+            category: 'books',
+            location: 'Mathematics Building - Room 201',
+            dateLost: '2024-01-14',
+            timeLost: '16:00',
+            description: 'Calculus: Early Transcendentals 8th Edition by James Stewart. Has my name "Sarah Johnson" written inside.',
+            contact: 'sarah.johnson@campus.edu',
+            reward: 'Coffee',
+            datePosted: '2024-01-14T16:00:00.000Z',
+            status: 'active'
+        }
+    ];
+    
+    const sampleFoundItems = [
+        {
+            id: 'sample-found-1',
+            type: 'found',
+            itemName: 'Silver Laptop',
+            category: 'electronics',
+            location: 'Cafeteria - Table near window',
+            dateFound: '2024-01-15',
+            timeFound: '12:00',
+            description: 'Silver MacBook Air with stickers on the lid. Found on table after lunch rush.',
+            image: null,
+            contact: 'security@campus.edu',
+            currentLocation: 'Campus Security Office',
+            datePosted: '2024-01-15T12:00:00.000Z',
+            status: 'active'
+        },
+        {
+            id: 'sample-found-2',
+            type: 'found',
+            itemName: 'Red Water Bottle',
+            category: 'other',
+            location: 'Gym - Weight Room',
+            dateFound: '2024-01-14',
+            timeFound: '18:30',
+            description: 'Red Hydro Flask water bottle with "Mike" written on it. Found near the bench press.',
+            image: null,
+            contact: 'gym.staff@campus.edu',
+            currentLocation: 'Gym Front Desk',
+            datePosted: '2024-01-14T18:30:00.000Z',
+            status: 'active'
+        }
+    ];
+    
+    lostItems = sampleLostItems;
+    foundItems = sampleFoundItems;
+    saveItemsToStorage();
 }
 
 // Format date for display
@@ -444,28 +518,28 @@ function formatDate(dateString) {
 }
 
 // Cleanup old found items (older than 1 day)
-async function cleanupOldItems() {
+function cleanupOldItems() {
     if (confirm('This will remove all found items older than 1 day. Continue?')) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/cleanup`, {
-                method: 'POST'
-            });
-            
-            if (response.ok) {
-                const result = await response.json();
-                
-                // Reload items from API to reflect changes
-                await loadItemsFromAPI();
-                displayItems();
-                
-                showSuccessModal(`🧹 Cleanup completed!\n\n✅ Removed ${result.removedCount} old found items\n📊 ${result.remainingFoundItems} found items remaining\n\nOld items have been automatically cleaned up.`);
-            } else {
-                throw new Error('Failed to cleanup old items');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showSuccessModal('Error: Failed to cleanup old items. Please try again.');
-        }
+        const oneDayAgo = new Date();
+        oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+        
+        const originalFoundCount = foundItems.length;
+        
+        // Remove found items older than 1 day
+        foundItems = foundItems.filter(item => {
+            const foundDate = new Date(item.dateFound);
+            return foundDate > oneDayAgo;
+        });
+        
+        const removedCount = originalFoundCount - foundItems.length;
+        
+        // Save to localStorage
+        saveItemsToStorage();
+        
+        // Display items
+        displayItems();
+        
+        showSuccessModal(`🧹 Cleanup completed!\n\n✅ Removed ${removedCount} old found items\n📊 ${foundItems.length} found items remaining\n\nOld items have been automatically cleaned up.`);
     }
 }
 
@@ -481,6 +555,7 @@ function debounce(func, wait) {
         timeout = setTimeout(later, wait);
     };
 }
+
 // Add smooth scrolling for all internal links
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -496,11 +571,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
 // Add intersection observer for animations
 const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
 };
+
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -508,6 +585,7 @@ const observer = new IntersectionObserver((entries) => {
         }
     });
 }, observerOptions);
+
 // Observe all sections for animation
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.section').forEach(section => {
