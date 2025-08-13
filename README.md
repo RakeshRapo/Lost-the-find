@@ -162,7 +162,7 @@ This project is open source and available under the MIT License.
 
 For support or questions:
 - Email: support@campusfind.com
-- Phone: (555) 123-4567
+- Phone: 
 
 ## 🎯 Project Goals
 
@@ -178,3 +178,4 @@ The Campus Find the Lost Portal aims to:
 **Made with ❤️ for the campus community**
 
 *Help us make campus life easier, one found item at a time!*
+
